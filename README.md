@@ -49,6 +49,7 @@ kite = KiteApp(enctoken=enctoken)
 Other Methods
 ```python
 # Basic calls
+print(kite.profile())
 print(kite.margins())
 print(kite.orders())
 print(kite.positions())
@@ -58,10 +59,25 @@ print(kite.instruments())
 print(kite.instruments("NSE"))
 print(kite.instruments("NFO"))
 
-# Get Live Data
-print(kite.ltp("NSE:RELIANCE"))
-print(kite.ltp(["NSE:NIFTY 50", "NSE:NIFTY BANK"]))
-print(kite.quote(["NSE:NIFTY BANK", "NSE:ACC", "NFO:NIFTY22SEPFUT"]))
+
+# Get Tick Data 'Use Websocket'
+from kiteconnect import KiteTicker
+user_id = kite.profile()["user_id"]
+kws = KiteTicker(api_key="TradeViaPython", access_token=enctoken+"&user_id="+user_id)
+
+def on_ticks(ws, ticks):
+    print(ticks)
+
+kws.on_ticks = on_ticks
+kws.connect(threaded=True)
+while not kws.is_connected():
+    time.sleep(1)
+print("WebSocket : Connected")
+kws.subscribe([256265, 260105, 738561, 5633])
+kws.set_mode(kws.MODE_QUOTE, [256265, 260105, 738561, 5633])
+time.sleep(30)
+kws.unsubscribe([256265, 260105, 738561, 5633])
+
 
 # Get Historical Data
 import datetime
